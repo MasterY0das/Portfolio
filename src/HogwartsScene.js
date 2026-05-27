@@ -215,8 +215,10 @@ function torch(parent, M, pos, scene) {
   const [x,y,z]=pos
   mk(parent, new THREE.BoxGeometry(0.22,0.22,0.5), M.iron, [x,y,z])
   mk(parent, new THREE.SphereGeometry(0.2,7,6), M.flame, [x,y+0.3,z], [0,0,0], false, false)
-  const l=new THREE.PointLight(0xff6a1e,0.9,12,1.7); l.position.set(x,y+0.3,z); parent.add(l)
-  animatables.push(t=>{l.intensity=0.8+Math.sin(t*5.5+x*2.7+z)*0.18+Math.sin(t*12+x)*0.07})
+  // No per-torch PointLight on purpose: there are ~30 torches and one real-time
+  // light each murdered the frame rate (every light is evaluated per pixel by the
+  // standard material). The flame still reads as lit via its emissive material +
+  // bloom; the room key lights + ambient/hemisphere do the actual illumination.
 }
 
 // ─── A · Entrance hall ──────────────────────────────────────────────────────
@@ -655,32 +657,34 @@ function buildWinterExterior(scene, M) {
 // ─── Lighting + shadows ─────────────────────────────────────────────────────────
 
 function setupLighting(scene) {
-  // Brighter base illumination — surfaces read everywhere, not just near fire
-  scene.add(new THREE.AmbientLight(0x9a96b0, 3.0))
-  scene.add(new THREE.HemisphereLight(0x8090c0, 0x5a4628, 2.2))
+  // Brighter base illumination — surfaces read everywhere, not just near fire.
+  // Bumped a touch to make up for the per-torch point lights we removed for perf.
+  scene.add(new THREE.AmbientLight(0x9a96b0, 3.4))
+  scene.add(new THREE.HemisphereLight(0x8090c0, 0x5a4628, 2.6))
 
-  // Moonlight — gives shape + shadows; follows camera in main.js
+  // Moonlight — the ONE shadow-casting light in the scene; follows camera in main.js
   sunLight = new THREE.DirectionalLight(0xd6e6ff, 1.7)
   sunLight.position.set(20, 50, 20)
   sunLight.castShadow = true
-  sunLight.shadow.mapSize.set(2048, 2048)
+  sunLight.shadow.mapSize.set(1024, 1024)
   const sc = sunLight.shadow.camera
   sc.near=1; sc.far=130; sc.left=-26; sc.right=26; sc.top=26; sc.bottom=-26
   sunLight.shadow.bias = -0.0006
   scene.add(sunLight); scene.add(sunLight.target)
 
-  // Warm key lights per room — three cast shadows for depth
-  const key=(color,intensity,dist,pos,shadow)=>{
+  // Warm key lights per room. NONE cast shadows now: a PointLight shadow is a
+  // 6-face cube render every frame, and three of them was the biggest single
+  // frame-rate cost. The directional moonlight provides all the cast shadows.
+  const key=(color,intensity,dist,pos)=>{
     const l=new THREE.PointLight(color,intensity,dist,1.4); l.position.set(...pos)
-    if(shadow){ l.castShadow=true; l.shadow.mapSize.set(1024,1024); l.shadow.bias=-0.004; l.shadow.camera.far=dist }
     scene.add(l); return l
   }
-  key(0xffc888, 3.4, 44, [0, 12, 0], false)                 // entrance
-  key(0xffbe70, 3.8, 66, [0, 15, -30], true)                // great hall (shadow)
-  key(0xffb45e, 3.4, 66, [0, 14, -52], false)               // hall end
-  key(0xffac54, 3.4, 50, [LAYOUT.C.cx, 16, LAYOUT.C.cz], true) // tower (shadow)
-  key(0xffbc6a, 3.4, 56, [32, LAYOUT.D.y0+5, -75], false)   // corridor
-  key(0xffca8a, 3.8, 66, [66, LAYOUT.E.y0+8, -75], true)    // library (shadow)
+  key(0xffc888, 3.4, 44, [0, 12, 0])                 // entrance
+  key(0xffbe70, 3.8, 66, [0, 15, -30])               // great hall
+  key(0xffb45e, 3.4, 66, [0, 14, -52])               // hall end
+  key(0xffac54, 3.4, 50, [LAYOUT.C.cx, 16, LAYOUT.C.cz]) // tower
+  key(0xffbc6a, 3.4, 56, [32, LAYOUT.D.y0+5, -75])   // corridor
+  key(0xffca8a, 3.8, 66, [66, LAYOUT.E.y0+8, -75])   // library
 
   // Cool winter moonlight spilling through the library window — magical contrast
   const win = new THREE.PointLight(0x9cc0f0, 2.6, 60, 1.1)

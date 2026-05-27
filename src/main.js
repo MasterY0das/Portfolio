@@ -12,7 +12,7 @@ import { initTextAnimations, showSection, hideAllSections } from './TextAnimatio
 
 const canvas   = document.getElementById('canvas')
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))   // cap DPR — 2× on retina ~doubles the pixels to shade
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.toneMapping         = THREE.ACESFilmicToneMapping
 renderer.toneMappingExposure = 1.55
@@ -150,7 +150,15 @@ function animate(time) {
 
 // ─── Loading sequence ─────────────────────────────────────────────────────────
 
-function runLoader() {
+// Warm-up: compile every shader and prime the post-processing chain BEFORE the
+// reveal, so the first interactive frames don't hitch. This is the real work the
+// loading screen is waiting on — it's not just a timer.
+function warmUpScene() {
+  renderer.compile(scene, camera)            // build all material/light shader programs now
+  for (let i = 0; i < 3; i++) composer.render()  // prime bloom mips + render/output passes
+}
+
+async function runLoader() {
   const chars   = [...document.querySelectorAll('.load-char')]
   const fill    = document.querySelector('.loading-fill')
   const loading = document.getElementById('loading')
@@ -158,15 +166,25 @@ function runLoader() {
     c.style.transition = `opacity 0.4s ${i*55}ms cubic-bezier(0.16,1,0.3,1), transform 0.4s ${i*55}ms cubic-bezier(0.16,1,0.3,1)`
     c.style.opacity = '1'; c.style.transform = 'translateY(0)'
   })
-  setTimeout(() => { fill.style.transition = 'width 1.0s cubic-bezier(0.4,0,0.2,1)'; fill.style.width = '100%' }, chars.length*55 + 80)
+
+  // Minimum on-screen time so the intro reads, regardless of how fast we warm up.
+  const minVisible = new Promise(r => setTimeout(r, 1400))
+
+  // Let the loading screen paint a couple of frames, then do the heavy lifting.
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+  warmUpScene()
+  try { await document.fonts.ready } catch (_) {}   // avoid a font pop-in after reveal
+
+  fill.style.transition = 'width 0.5s cubic-bezier(0.4,0,0.2,1)'
+  fill.style.width = '100%'
+
+  await minVisible
+  loading.style.transition = 'opacity 0.7s ease'; loading.style.opacity = '0'
   setTimeout(() => {
-    loading.style.transition = 'opacity 0.8s ease'; loading.style.opacity = '0'
-    setTimeout(() => {
-      loading.style.display = 'none'
-      initTextAnimations(); showSection('s-hero')
-      requestAnimationFrame(animate)
-    }, 800)
-  }, chars.length*55 + 1300)
+    loading.style.display = 'none'
+    initTextAnimations(); showSection('s-hero')
+    requestAnimationFrame(animate)
+  }, 700)
 }
 
 if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', runLoader)
