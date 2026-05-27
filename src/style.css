@@ -1,0 +1,481 @@
+/* =========================================================
+   CUSTOM FONTS
+   ========================================================= */
+@font-face {
+  font-family: 'Technor';
+  src: url('./Technor-Semibold.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('./Supreme-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+
+/* =========================================================
+   CSS VARIABLES
+   ========================================================= */
+:root {
+  --bg:          #060508;
+  --stone:       #1a1512;
+  --stone-mid:   #2a2318;
+  --stone-light: #5a4f40;
+  --gold:        #e3b94a;        /* warm candle gold */
+  --gold-light:  #f4d77a;
+  --fire:        #ff8a3c;
+  --ember:       #ffb066;
+  --frost:       #bcd6f0;        /* winter ice-blue accent */
+  --cream:       #efe6d2;
+  --parchment:   #f6efe0;        /* bright cream — headings */
+  --text:        #e2d6bf;        /* warm readable body */
+  --text-dim:    #a99a82;        /* brighter dim — labels */
+  --text-bright: #fbf4e6;
+
+  --font-display:   'Technor', Georgia, 'Times New Roman', serif;
+  --font-statement: 'Technor', Georgia, 'Times New Roman', serif;
+  --font-body:      'Supreme', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --door-dur: 0.45s;
+}
+
+/* =========================================================
+   RESET & BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html::-webkit-scrollbar { display: none; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+button { background: none; border: none; cursor: pointer; color: inherit; }
+
+/* =========================================================
+   CANVAS — fixed full-screen behind everything
+   ========================================================= */
+#canvas {
+  position: fixed; inset: 0; z-index: 0;
+  display: block; width: 100vw; height: 100vh;
+}
+
+/* =========================================================
+   SCROLL SPACE
+   ========================================================= */
+#scroll-space {
+  position: relative; z-index: 1;
+  height: 600vh; pointer-events: none;
+}
+
+/* =========================================================
+   OVERLAY
+   ========================================================= */
+#overlay {
+  position: fixed; inset: 0; z-index: 10; pointer-events: none;
+}
+
+/* =========================================================
+   DOOR TRANSITION OVERLAY
+   ========================================================= */
+/* Door overlay — just a dark flash; 3D doors handle the visual */
+#door-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  pointer-events: none;
+  background: #060402;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+#door-overlay.shut { opacity: 1; }
+/* .door-panel kept in DOM but invisible */
+.door-panel { display: none; }
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+.scene-section {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  opacity: 0; pointer-events: none;
+  will-change: opacity;
+}
+.scene-section.active { pointer-events: all; }
+
+.section-inner {
+  width: 100%; max-width: 1400px;
+  margin: 0 auto; padding: 0 6vw;
+}
+
+.section-label {
+  font-family: var(--font-body);
+  font-size: 0.68rem; font-weight: 400;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+
+.section-heading {
+  font-family: var(--font-statement);
+  font-size: clamp(3.5rem, 9vw, 9rem);
+  line-height: 0.9; letter-spacing: 0.02em;
+  color: var(--text-bright);
+  margin-bottom: 2.5rem;
+}
+.section-heading .char { display: inline-block; will-change: transform, opacity; }
+.heading-line { display: block; }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero-inner {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  min-height: 100vh; padding-top: 8vh; padding-left: 8vw;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem; font-weight: 400;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.8rem;
+}
+
+.hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 9vw, 9.5rem);
+  line-height: 0.88; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--parchment);
+  margin-bottom: 2rem; overflow: visible; white-space: nowrap;
+}
+.name-line { display: block; white-space: nowrap; }
+.accent-line { color: transparent; -webkit-text-stroke: 2px var(--gold); }
+.hero-name .char { display: inline-block; will-change: transform, opacity, filter; }
+
+.hero-title {
+  font-family: var(--font-statement);
+  font-size: clamp(0.9rem, 2vw, 1.6rem);
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 1.2rem;
+}
+
+.hero-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
+  font-weight: 300; line-height: 1.75;
+  color: var(--text-dim); max-width: 420px; margin-bottom: 2.5rem;
+}
+
+.scroll-cue {
+  display: flex; align-items: center; gap: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.scroll-arrow {
+  width: 28px; height: 28px;
+  border: 1px solid var(--stone-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.scroll-arrow-inner {
+  width: 1px; height: 12px; background: var(--gold);
+  animation: scroll-pulse 2.2s ease-in-out infinite;
+}
+@keyframes scroll-pulse {
+  0%   { transform: translateY(-12px); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(12px);  opacity: 0; }
+}
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+.about-inner { padding-left: 10vw; }
+.about-body { max-width: 540px; margin-bottom: 2.5rem; }
+
+.body-line {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+  font-weight: 300; line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 1.4rem;
+  /* GSAP animates opacity+y — no pseudo-element wipe needed */
+}
+
+.skills-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.skill-chip {
+  font-family: var(--font-body);
+  font-size: 0.68rem; font-weight: 400;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--stone-light);
+  padding: 0.45rem 1.1rem;
+}
+
+/* =========================================================
+   WORK
+   ========================================================= */
+.work-inner { padding-right: 6vw; }
+.projects-list { display: flex; flex-direction: column; }
+
+.project-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr 2.5rem;
+  gap: 2rem; align-items: center;
+  padding: 1.6rem 0;
+  border-bottom: 1px solid var(--stone-mid);
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.project-row:first-child { border-top: 1px solid var(--stone-mid); }
+.project-row:hover { border-color: var(--gold); }
+.project-row:hover .proj-arrow { color: var(--gold); transform: translateX(5px); }
+
+.proj-num {
+  font-family: var(--font-body);
+  font-size: 0.62rem; letter-spacing: 0.2em; color: var(--text-dim);
+}
+.proj-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.2vw, 2rem);
+  font-weight: 600; color: var(--text-bright); margin-bottom: 0.4rem;
+}
+.proj-desc {
+  font-family: var(--font-body);
+  font-size: 0.82rem; font-weight: 300;
+  color: var(--text-dim); line-height: 1.6; margin-bottom: 0.65rem;
+}
+.proj-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.proj-tags span {
+  font-family: var(--font-body);
+  font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--stone-light);
+  border: 1px solid var(--stone-mid); padding: 0.22rem 0.55rem;
+}
+.proj-arrow {
+  font-size: 1.1rem; color: var(--text-dim);
+  transition: color 0.3s, transform 0.3s; text-align: right;
+}
+
+/* =========================================================
+   EXPERIENCE
+   ========================================================= */
+.exp-inner { padding-left: 10vw; }
+.timeline { display: flex; flex-direction: column; }
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr;
+  gap: 2rem; align-items: baseline;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--stone-mid);
+}
+.timeline-row:first-child { border-top: 1px solid var(--stone-mid); }
+
+.t-period {
+  font-family: var(--font-body);
+  font-size: 0.7rem; letter-spacing: 0.14em; color: var(--text-dim);
+}
+.t-role {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 600; color: var(--text-bright);
+}
+.t-company {
+  font-family: var(--font-body);
+  font-size: 0.82rem; color: var(--gold); text-align: right;
+}
+
+/* =========================================================
+   CONTACT — centred layout
+   ========================================================= */
+.contact-inner {
+  display: flex; flex-direction: column;
+  align-items: center;          /* ← centred */
+  text-align: center;
+  width: 100%;
+}
+
+.contact-heading {
+  font-family: var(--font-statement);
+  font-size: clamp(3.2rem, 7.5vw, 8rem);
+  line-height: 0.88; letter-spacing: 0.02em;
+  color: var(--parchment);
+  margin-bottom: 3rem;
+  text-align: center;
+}
+.contact-line {
+  display: block;
+  text-align: center;
+}
+.contact-heading .char { display: inline-block; will-change: transform, opacity; }
+
+.contact-links {
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 480px;
+  margin-bottom: 3.5rem;
+}
+.contact-link {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--stone-mid);
+  pointer-events: all;
+  transition: border-color 0.3s;
+}
+.contact-link:first-child { border-top: 1px solid var(--stone-mid); }
+.contact-link:hover { border-color: var(--gold); }
+.contact-link:hover .cl-value { color: var(--gold); }
+
+.cl-label {
+  font-family: var(--font-body);
+  font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+.cl-value {
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 400; color: var(--text-bright);
+  transition: color 0.3s;
+}
+.footer-credit {
+  font-family: var(--font-body);
+  font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--stone-light);
+}
+
+/* =========================================================
+   SECTION DOTS
+   ========================================================= */
+#section-dots {
+  position: absolute; right: 1.8rem; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--stone-light);
+  transition: background 0.35s, transform 0.35s;
+  pointer-events: all; cursor: pointer;
+}
+.dot.active { background: var(--gold); transform: scale(1.6); }
+
+/* =========================================================
+   LOADING SCREEN — Hogwarts wand
+   ========================================================= */
+#loading {
+  position: fixed; inset: 0; z-index: 9999;
+  background: radial-gradient(ellipse at center, #0d0a08 0%, #040302 70%);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.loading-inner {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1.6rem;
+}
+
+/* Wand video container */
+.wand-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.wand-video {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  /* Source clip is a dark wand on a WHITE bg. invert() flips it to a light
+     wand on black, so mix-blend-mode:screen drops the (now-black) bg on our
+     dark loading screen. The warm filter chain re-tints the wand gold. */
+  filter: invert(1) sepia(0.6) saturate(2.6) hue-rotate(2deg) brightness(1.08);
+  mix-blend-mode: screen;
+  opacity: 0.95;
+}
+
+/* SVG sparkles float on top of video */
+.wand-sparkles {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: sparkle-drift 3s ease-in-out infinite alternate;
+}
+@keyframes sparkle-drift {
+  from { transform: scale(1)   rotate(-2deg); opacity: 0.8; }
+  to   { transform: scale(1.06) rotate( 2deg); opacity: 1;  }
+}
+
+/* Golden glow halo behind wand */
+.wand-wrap::before {
+  content: '';
+  position: absolute; inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #c9a22730 0%, transparent 70%);
+  animation: wand-glow 2s ease-in-out infinite alternate;
+}
+@keyframes wand-glow {
+  from { opacity: 0.4; transform: scale(0.9); }
+  to   { opacity: 1;   transform: scale(1.1); }
+}
+
+.loading-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem; font-weight: 700;
+  letter-spacing: 0.55em; color: var(--parchment);
+  display: flex; white-space: nowrap;
+}
+.load-char {
+  opacity: 0; transform: translateY(18px); display: inline-block;
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loading-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold); opacity: 0.65;
+}
+
+.loading-bar {
+  width: 200px; height: 1px;
+  background: var(--stone-mid);
+  position: relative; overflow: hidden;
+}
+.loading-bar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+  animation: bar-shimmer 1.8s ease-in-out infinite;
+  transform: translateX(-100%);
+}
+@keyframes bar-shimmer {
+  to { transform: translateX(200%); }
+}
+.loading-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  position: relative; z-index: 1;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+  .about-inner, .exp-inner { padding-left: 5vw; }
+  .hero-inner { padding-left: 6vw; }
+  .timeline-row { grid-template-columns: 1fr; gap: 0.4rem; }
+  .t-company { text-align: left; }
+  .contact-inner { padding: 0 5vw; }
+  #section-dots { display: none; }
+  .project-row { grid-template-columns: 2.5rem 1fr; }
+  .proj-arrow { display: none; }
+}

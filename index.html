@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nikhil K — Designer & Developer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,600&family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- GSAP UMD loaded first so window.gsap is defined before modules run -->
+  <script src="/gsap.min.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three":          "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+      "gsap":           "./src/gsap-shim.js"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LOADING SCREEN — Hogwarts wand theme
+       ═══════════════════════════════════════════════════════ -->
+  <div id="loading">
+    <div class="loading-inner">
+
+      <!-- Magic wand video / SVG fallback -->
+      <div class="wand-wrap">
+        <video class="wand-video" autoplay muted loop playsinline
+               poster="/magic-wand.svg">
+          <source src="/loading-wand.mp4" type="video/mp4" />
+        </video>
+        <!-- SVG sparkles shown on top of video always -->
+        <img class="wand-sparkles" src="/magic-wand.svg" alt="" />
+      </div>
+
+      <div class="loading-title">
+        <span class="load-char">N</span><span class="load-char">I</span><span
+          class="load-char">K</span><span class="load-char">H</span><span
+          class="load-char">I</span><span class="load-char">L</span><span
+          class="load-char">&nbsp;</span><span class="load-char">K</span>
+      </div>
+
+      <p class="loading-subtitle">Casting the spell&hellip;</p>
+
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Three.js canvas (fixed background) -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Scroll machine: creates vertical scroll space -->
+  <div id="scroll-space"></div>
+
+  <!-- Door transition overlay -->
+  <div id="door-overlay" aria-hidden="true">
+    <div class="door-panel door-left"></div>
+    <div class="door-panel door-right"></div>
+  </div>
+
+  <!-- Fixed overlay — all sections live here -->
+  <div id="overlay">
+
+    <!-- SECTION 0 — HERO -->
+    <section class="scene-section" id="s-hero">
+      <div class="section-inner hero-inner">
+        <p class="eyebrow">Portfolio — 2025</p>
+        <h1 class="hero-name">
+          <span class="name-line">NIKHIL</span>
+          <span class="name-line accent-line">K</span>
+        </h1>
+        <p class="hero-title">Designer &amp; Developer</p>
+        <p class="hero-sub">Crafting immersive experiences at the edge of art and technology</p>
+        <div class="scroll-cue">
+          <span>Scroll to enter</span>
+          <div class="scroll-arrow">
+            <div class="scroll-arrow-inner"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — ABOUT -->
+    <section class="scene-section" id="s-about">
+      <div class="section-inner about-inner">
+        <div class="section-label">01 — About</div>
+        <h2 class="section-heading">ABOUT</h2>
+        <div class="about-body">
+          <p class="body-line">
+            I build experiences people remember. Rooted in design thinking and powered by code, my work lives at the crossroads of visual narrative and technical precision.
+          </p>
+          <p class="body-line">
+            From concept to code — obsessive attention to detail, because the difference between good and extraordinary is in what others miss.
+          </p>
+        </div>
+        <div class="skills-row">
+          <div class="skill-chip">UI / UX Design</div>
+          <div class="skill-chip">Frontend Dev</div>
+          <div class="skill-chip">3D & Motion</div>
+          <div class="skill-chip">Branding</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — WORK -->
+    <section class="scene-section" id="s-work">
+      <div class="section-inner work-inner">
+        <div class="section-label">02 — Work</div>
+        <h2 class="section-heading" aria-label="SELECTED WORK">
+          <span class="heading-line">SELECTED</span>
+          <span class="heading-line">WORK</span>
+        </h2>
+        <div class="projects-list">
+          <div class="project-row">
+            <div class="proj-num">001</div>
+            <div class="proj-body">
+              <h3 class="proj-name">Project Alpha</h3>
+              <p class="proj-desc">A design system built for scale — cohesive, adaptive, alive.</p>
+              <div class="proj-tags"><span>Design Systems</span><span>React</span><span>Figma</span></div>
+            </div>
+            <div class="proj-arrow">&#x2192;</div>
+          </div>
+          <div class="project-row">
+            <div class="proj-num">002</div>
+            <div class="proj-body">
+              <h3 class="proj-name">Project Beta</h3>
+              <p class="proj-desc">Full-stack platform connecting creators with their audience in real time.</p>
+              <div class="proj-tags"><span>Full Stack</span><span>Node.js</span><span>WebGL</span></div>
+            </div>
+            <div class="proj-arrow">&#x2192;</div>
+          </div>
+          <div class="project-row">
+            <div class="proj-num">003</div>
+            <div class="proj-body">
+              <h3 class="proj-name">Project Gamma</h3>
+              <p class="proj-desc">Immersive 3D brand identity for a luxury fashion label.</p>
+              <div class="proj-tags"><span>3D Design</span><span>Three.js</span><span>Branding</span></div>
+            </div>
+            <div class="proj-arrow">&#x2192;</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — EXPERIENCE -->
+    <section class="scene-section" id="s-exp">
+      <div class="section-inner exp-inner">
+        <div class="section-label">03 — Experience</div>
+        <h2 class="section-heading">EXPERIENCE</h2>
+        <div class="timeline">
+          <div class="timeline-row">
+            <div class="t-period">2024 — Now</div>
+            <div class="t-role">Senior Designer</div>
+            <div class="t-company">Studio Name</div>
+          </div>
+          <div class="timeline-row">
+            <div class="t-period">2022 — 2024</div>
+            <div class="t-role">UI / UX Designer</div>
+            <div class="t-company">Company Name</div>
+          </div>
+          <div class="timeline-row">
+            <div class="t-period">2020 — 2022</div>
+            <div class="t-role">Frontend Developer</div>
+            <div class="t-company">Agency Name</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — CONTACT -->
+    <section class="scene-section" id="s-contact">
+      <div class="section-inner contact-inner">
+        <h2 class="contact-heading" aria-label="LET'S CREATE SOMETHING EXTRAORDINARY">
+          <div class="contact-line">LET'S</div>
+          <div class="contact-line">CREATE</div>
+          <div class="contact-line">SOMETHING</div>
+          <div class="contact-line">EXTRAORDINARY</div>
+        </h2>
+        <div class="contact-links">
+          <a href="mailto:hello@nikhilk.com" class="contact-link">
+            <span class="cl-label">Email</span>
+            <span class="cl-value">hello@nikhilk.com</span>
+          </a>
+          <a href="https://github.com/" class="contact-link" target="_blank">
+            <span class="cl-label">GitHub</span>
+            <span class="cl-value">@nikhilk</span>
+          </a>
+          <a href="https://linkedin.com/" class="contact-link" target="_blank">
+            <span class="cl-label">LinkedIn</span>
+            <span class="cl-value">Nikhil K</span>
+          </a>
+        </div>
+        <p class="footer-credit">© 2025 Nikhil K — Built with Three.js</p>
+      </div>
+    </section>
+
+    <!-- Section indicator dots -->
+    <div id="section-dots">
+      <button class="dot active" data-idx="0"></button>
+      <button class="dot" data-idx="1"></button>
+      <button class="dot" data-idx="2"></button>
+      <button class="dot" data-idx="3"></button>
+      <button class="dot" data-idx="4"></button>
+    </div>
+
+  </div><!-- /overlay -->
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
